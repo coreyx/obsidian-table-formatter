@@ -61,10 +61,10 @@ Tables drawn with text characters are converted when you paste them as plain tex
 pastes as:
 
 ```markdown
-| Option    | Description                    |
-| --------- | ------------------------------ |
-| --verbose | Print every step as it<br>runs |
-| --limit   | Maximum number of items        |
+| Option    | Description                 |
+| --------- | --------------------------- |
+| --verbose | Print every step as it runs |
+| --limit   | Maximum number of items     |
 ```
 
 Supported layouts:
@@ -75,7 +75,7 @@ Supported layouts:
 | `+---+` grid | `+----+----+` and `\| a \| b \|` | MySQL, prettytable, tabulate (`grid`) |
 | psql | `a \| b` over `---+---` | PostgreSQL's `psql` |
 
-Text around a table is kept as it was. When rows are separated by rules, a cell that wraps over several lines becomes one cell, with its lines joined by `<br>`. Wide characters such as CJK text are measured the way terminals measure them, so columns stay aligned.
+Text around a table is kept as it was. When rows are separated by rules, a cell that wraps over several lines becomes one cell, and its lines are joined with spaces, since terminals wrap text to fit the column. A line that starts a list item (`- `, `* `, `• `, `1. `) goes on a new line within the cell instead (`<br>`), so lists stay one item per line. Wide characters such as CJK text are measured the way terminals measure them, so columns stay aligned.
 
 **Not converted:**
 - Columns lined up with spaces only, as in `docker ps` or `kubectl get` output. These can't be told apart reliably from ordinary aligned text.

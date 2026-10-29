@@ -35,7 +35,7 @@ None at this time.
 ### Documentation
 
 #### [MODIFY] `README.md`
-- [ ] **TASK-2:** Update the ASCII example's output to `Print every step as it runs`. Reword the sentence about wrapped cells to describe the new rule, including the list-marker exception.
+- [x] **TASK-2:** Update the ASCII example's output to `Print every step as it runs`. Reword the sentence about wrapped cells to describe the new rule, including the list-marker exception.
 
 ## Verification Plan
 
