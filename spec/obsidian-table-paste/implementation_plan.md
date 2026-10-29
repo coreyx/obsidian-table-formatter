@@ -67,7 +67,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 ### HTML table conversion
 
 #### [NEW] `src/html-tables.ts`
-- [ ] **TASK-4:** `htmlTableToGrid(table: HTMLTableElement, cellToMarkdown: (el: HTMLElement) => string): TableGrid`.
+- [x] **TASK-4:** `htmlTableToGrid(table: HTMLTableElement, cellToMarkdown: (el: HTMLElement) => string): TableGrid`.
   - Builds a grid that expands `colspan`/`rowspan` into empty cells.
   - Picks the header row using the rules in User Review Required.
   - Reads alignment from header cells.
