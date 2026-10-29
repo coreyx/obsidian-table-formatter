@@ -57,7 +57,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 ### Shared table model
 
 #### [NEW] `src/table-model.ts`
-- [ ] **TASK-3:** Define `TableGrid` (`{ header: string[]; rows: string[][]; align: Align[] }`, with `Align` = `'left' | 'center' | 'right' | null`), and `renderGfmTable(grid): string`.
+- [x] **TASK-3:** Define `TableGrid` (`{ header: string[]; rows: string[][]; align: Align[] }`, with `Align` = `'left' | 'center' | 'right' | null`), and `renderGfmTable(grid): string`.
   - Pads short rows so every row has the same column count.
   - Escapes unescaped `|` as `\|`, turns newlines inside a cell into `<br>`, and trims cell whitespace.
   - Pads each column to its widest cell so the source Markdown reads well, measuring width in code points.
