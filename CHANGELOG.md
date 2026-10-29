@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-29
+
 ### Added
 - **HTML tables:** tables copied from web pages, Google Sheets, Excel and documents paste as GFM Markdown tables. The rest of the paste goes through Obsidian's own HTML conversion.
 - **How HTML tables are shaped:**
@@ -17,3 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ASCII tables:** box-drawing tables (light, heavy, double, rounded), `+---+` grids (MySQL, prettytable, tabulate) and psql output paste as Markdown tables, from plain text or from a `<pre>` block in pasted HTML. Wide characters keep their columns.
 - **Paste as plain text** (Ctrl/Cmd+Shift+V) skips conversion.
 - **Settings:** a toggle each for HTML and ASCII table conversion. HTML conversion also follows Obsidian's "Convert pasted HTML to Markdown" setting.
+
+[Unreleased]: https://github.com/coreyx/obsidian-table-formatter/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/coreyx/obsidian-table-formatter/releases/tag/0.1.0
