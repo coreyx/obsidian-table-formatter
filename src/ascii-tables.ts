@@ -194,6 +194,79 @@ export function dedent(lines: string[]): string[] {
 	return trimmed.map((line) => line.slice(Number.isFinite(indent) ? indent : 0));
 }
 
+/** psql's header underline: dashes with a `+` under each column separator. */
+const PSQL_RULE = /^-+(?:\+-+)+$/;
+
+/** psql's row-count footer, e.g. `(3 rows)`. */
+const PSQL_FOOTER = /^\(\d+ rows?\)$/;
+
+/**
+ * Whether the lines look like the start of a psql table: a header line with
+ * `|` separators, then the `---+---` underline.
+ */
+export function isPsqlStart(header: string, rule: string): boolean {
+	return header.includes('|') && PSQL_RULE.test(rule.trim());
+}
+
+/**
+ * Cuts a borderless psql line at the separator columns. The first and last
+ * cells run to the line's edges, unlike a bordered table's.
+ *
+ * @returns The cells, or `null` if a `|` isn't at every separator column.
+ */
+function splitPsqlLine(line: string, separators: number[]): string[] | null {
+	const placed = place(line);
+	const at = new Map(placed.map((p, i) => [p.col, i]));
+	const cuts: number[] = [];
+	for (const col of separators) {
+		const i = at.get(col);
+		if (i === undefined || placed[i]?.ch !== '|') return null;
+		cuts.push(i);
+	}
+	const text = (from: number, to: number): string =>
+		placed
+			.slice(from, to)
+			.map((p) => p.ch)
+			.join('');
+	return [text(0, cuts[0] ?? placed.length), ...cuts.map((cut, k) => text(cut + 1, cuts[k + 1] ?? placed.length))];
+}
+
+/**
+ * Parses psql's borderless table layout:
+ *
+ * ```
+ *  id | name
+ * ----+------
+ *   1 | Ada
+ * (1 row)
+ * ```
+ *
+ * Columns are cut at the `+` positions of the underline. The `(N rows)`
+ * footer, if present, is dropped.
+ *
+ * @param lines - Header line, underline, then data rows and optional footer.
+ * @returns The grid, or `null` if the lines don't follow that layout.
+ */
+export function parsePsqlTable(lines: string[]): TableGrid | null {
+	const table = lines.map((line) => line.replace(/\s+$/, ''));
+	while (table.length && (table[table.length - 1] === '' || PSQL_FOOTER.test(table[table.length - 1]?.trim() ?? ''))) table.pop();
+
+	const [header, rule, ...body] = table;
+	if (header === undefined || rule === undefined || !isPsqlStart(header, rule)) return null;
+	const separators = place(rule)
+		.filter(({ ch }) => ch === '+')
+		.map(({ col }) => col);
+
+	const rows: string[][] = [];
+	for (const line of [header, ...body]) {
+		const cells = splitPsqlLine(line, separators) ?? line.split('|');
+		if (cells.length !== separators.length + 1) return null;
+		rows.push(cells.map((cell) => cell.trim()));
+	}
+	const [headerCells, ...bodyRows] = rows;
+	return { header: headerCells ?? [], rows: bodyRows, align: [] };
+}
+
 /**
  * Parses a bordered ASCII or box-drawing table: MySQL/prettytable/tabulate
  * `+---+` grids, and tables drawn with box-drawing characters (light, heavy,

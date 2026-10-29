@@ -2,7 +2,7 @@
 // Fixtures are synthetic tables in the layouts real tools print.
 import { readFileSync } from 'node:fs';
 import { check, finish } from './harness.ts';
-import { parseAsciiTable } from '../src/ascii-tables.ts';
+import { parseAsciiTable, parsePsqlTable } from '../src/ascii-tables.ts';
 import { renderGfmTable } from '../src/table-model.ts';
 
 const fixture = (name: string): string => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
@@ -74,5 +74,23 @@ check('single-column box left alone', table(['┌──────────�
 check('prose is not a table', table('Just a sentence | with a pipe |'), null);
 check('bare pipe lines without borders are not a table', table(['| a | b |', '| c | d |'].join('\n')), null);
 check('ragged rows are not a table', table(['+---+---+', '| a | b |', '| c |', '+---+---+'].join('\n')), null);
+
+// 4. psql (TASK-11): borderless, `---+---` underline, footer dropped.
+/** Like table(), but through the psql parser. */
+function psql(text: string): string[] | null {
+	const grid = parsePsqlTable(text.split('\n'));
+	if (!grid) return null;
+	return renderGfmTable(grid)
+		.split('\n')
+		.map((line, i) => (i === 1 ? line.replace(/-+/g, '---') : line).replace(/ {2,}/g, ' '));
+}
+check('psql table with footer', psql(fixture('psql-table.txt')), [
+	'| id | name | joined |',
+	'| --- | --- | --- |',
+	'| 1 | Ada | 2024-01-05 |',
+	'| 2 | Grace Hopper | |',
+]);
+check('psql single row footer', psql([' n ', '---', ' 1 ', '(1 row)'].join('\n')), null);
+check('psql without rule is not psql', psql([' a | b', ' 1 | 2'].join('\n')), null);
 
 finish();
