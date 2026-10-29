@@ -169,10 +169,18 @@ function splitOnBars(line: string): string[] {
 	return cells.slice(1, -1);
 }
 
+/** A piece of a cell that starts a list item: `- `, `* `, `+ `, `• `, `1. `, `2) `. */
+const LIST_ITEM = /^(?:[-*+•]|\d+[.)])\s/;
+
 /**
  * Joins one row's worth of content lines into a single row. Each cell's
- * pieces are trimmed, empty pieces dropped, and the rest joined with a line
- * break, which the renderer turns into `<br>`.
+ * pieces are trimmed and empty pieces dropped.
+ *
+ * Terminals and tools like Claude Code wrap long cell text to the column
+ * width, so a break between pieces is almost always just wrapping: pieces
+ * are joined with a space to put the sentence back together. A piece that
+ * starts a list item gets a line break instead (rendered as `<br>`), so
+ * lists inside a cell stay one item per line.
  */
 function mergeLines(lines: string[][]): string[] {
 	const columns = Math.max(0, ...lines.map((cells) => cells.length));
@@ -180,7 +188,7 @@ function mergeLines(lines: string[][]): string[] {
 		lines
 			.map((cells) => (cells[i] ?? '').trim())
 			.filter(Boolean)
-			.join('\n'),
+			.reduce((joined, piece) => (joined ? joined + (LIST_ITEM.test(piece) ? '\n' : ' ') + piece : piece), ''),
 	);
 }
 
@@ -278,7 +286,8 @@ export function parsePsqlTable(lines: string[]): TableGrid | null {
  * - Border lines split the content into groups. The first group is the
  *   header when any border follows it; otherwise the first line is promoted.
  * - When borders also separate the data rows, each group is one row and its
- *   lines are joined with line breaks; otherwise each line is a row.
+ *   lines are joined with spaces (line breaks before list items); otherwise
+ *   each line is a row.
  *
  * @param lines - The table's lines, every one a border or content line.
  * @returns The grid, or `null` when the lines aren't a consistent table with

@@ -28,7 +28,7 @@ None at this time.
 ### ASCII tables
 
 #### [MODIFY] `src/ascii-tables.ts`
-- [ ] **TASK-1:** Change `mergeLines()` so it joins a cell's pieces with a single space, and with `\n` (rendered as `<br>`) only before a piece that starts with a list marker.
+- [x] **TASK-1:** Change `mergeLines()` so it joins a cell's pieces with a single space, and with `\n` (rendered as `<br>`) only before a piece that starts with a list marker.
   - Add a `LIST_ITEM` pattern: `/^(?:[-*+•]|\d+[.)])\s/`.
   - Update the doc comments on `mergeLines()` and `parseAsciiTable()` to describe the new rule and why: terminal wrapping isn't meaningful.
 

@@ -31,10 +31,42 @@ check('mixed double header rule', table(['┌───────┬───�
 check('claude code table merges wrapped cell', table(fixture('claude-code-table.txt')), [
 	'| Option | Description | Default |',
 	'| --- | --- | --- |',
-	'| --verbose | Print every step as it<br>runs | off |',
+	'| --verbose | Print every step as it runs | off |',
 	'| --limit | Maximum number of items | 100 |',
 	'| --output | Where results go | stdout |',
 ]);
+
+// spec/ascii-wrapped-cell-join: wrapped pieces join with spaces, list items with <br>.
+check('cell wrapped over three lines joins with spaces', table([
+	'+-----+------------------+',
+	'| Key | Value            |',
+	'+-----+------------------+',
+	'| a   | one long cell    |',
+	'|     | that wraps over  |',
+	'|     | three lines      |',
+	'+-----+------------------+',
+	'| b   | short            |',
+	'+-----+------------------+',
+].join('\n'))?.[2], '| a | one long cell that wraps over three lines |');
+check('list items in a cell keep line breaks', table([
+	'┌──────┬─────────┐',
+	'│ Step │ Notes   │',
+	'├──────┼─────────┤',
+	'│ 1    │ - one   │',
+	'│      │ - two   │',
+	'├──────┼─────────┤',
+	'│ 2    │ 1. one  │',
+	'│      │ 2. two  │',
+	'└──────┴─────────┘',
+].join('\n'))?.slice(2), ['| 1 | - one<br>- two |', '| 2 | 1. one<br>2. two |']);
+check('wrapped header cell joins with a space', table([
+	'┌──────────┬─────┐',
+	'│ Long     │ Qty │',
+	'│ heading  │     │',
+	'├──────────┼─────┤',
+	'│ x        │ 1   │',
+	'└──────────┴─────┘',
+].join('\n'))?.[0], '| Long heading | Qty |');
 
 // 3 and 5. MySQL grid; a | inside a cell doesn't split it.
 check('mysql grid with pipe in cell', table(fixture('mysql-table.txt')), [
