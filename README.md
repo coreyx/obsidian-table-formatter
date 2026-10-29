@@ -3,7 +3,7 @@
 Paste tables into Obsidian and get clean Markdown tables, whatever they were copied from:
 
 - **Web pages**: Wikipedia, documentation sites, GitHub, chat apps, anything with an HTML `<table>`.
-- **Spreadsheets and documents**: Google Sheets, Excel, Word and anything else that copies cells as an HTML table.
+- **Spreadsheets and documents**: Google Sheets, Excel, Word and anything else that copies cells as an HTML table, plus apps that copy cells as tab-separated text.
 - **Terminals and CLI tools**: box-drawing tables from Claude Code and other agents, Rich, MySQL, psql, prettytable and tabulate.
 
 The plugin only acts while you paste into Obsidian. It never touches your clipboard, so copying keeps working exactly as before in every other app. Pastes without a table go through Obsidian's normal paste unchanged.
@@ -82,6 +82,18 @@ Text around a table is kept as it was. When rows are separated by rules, a cell 
 - A single box with no columns.
 - Tables that are already Markdown.
 
+### Tab-separated spreadsheet data
+
+Some spreadsheet and table apps copy cells only as tab-separated text, with no HTML table. When a paste is nothing but tab-separated rows, it becomes a Markdown table with the first row as its header. Cells that Excel and Google Sheets write in quotes, because they hold a line break or tab, are read correctly, and their line breaks become `<br>`.
+
+To keep ordinary text from being turned into a table, a paste only counts as spreadsheet data when:
+
+- the clipboard has no HTML at all, so code copied from an editor like VS Code, which also copies HTML, isn't converted;
+- it has at least two rows and two columns, with the same number of columns on every row;
+- not every row starts with a tab, which would be indentation.
+
+Comma-separated text isn't converted.
+
 ## Pasting without conversion
 
 Use **paste as plain text** (Ctrl+Shift+V, or Cmd+Shift+V on macOS) to paste the clipboard's raw text without any conversion.
@@ -92,6 +104,7 @@ Settings → Community plugins → Table Formatter:
 
 - **Convert HTML tables**: on by default. This also follows Obsidian's own Settings → Editor → **Convert pasted HTML to Markdown**. When that's off, Obsidian pastes plain text, and HTML tables are left alone to match.
 - **Convert ASCII tables**: on by default. This works whatever Obsidian's HTML setting is.
+- **Convert tab-separated data**: on by default. Turn it off if tab-aligned text you paste is being mistaken for a table.
 
 ## Installing
 
