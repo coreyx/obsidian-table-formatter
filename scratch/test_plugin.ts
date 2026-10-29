@@ -102,4 +102,12 @@ check('Cmd+Shift+V paste is left alone', paste({ 'text/html': table }).prevented
 keydown({ ctrlKey: true, key: 'v' });
 check('plain Ctrl+V still converts', paste({ 'text/html': table }).prevented, true);
 
+// TASK-9: Obsidian's "Convert pasted HTML to Markdown" setting is honored.
+vaultConfig.autoConvertHtml = false;
+check('HTML conversion off in Obsidian: falls through', paste({ 'text/html': table }), { prevented: false, inserted: null });
+vaultConfig.autoConvertHtml = true;
+check('HTML conversion on in Obsidian: converts', paste({ 'text/html': table }).prevented, true);
+delete vaultConfig.autoConvertHtml;
+check('setting missing: treated as on', paste({ 'text/html': table }).prevented, true);
+
 finish();

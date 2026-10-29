@@ -94,7 +94,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 - [x] **TASK-8:** Find out whether Ctrl/Cmd+Shift+V fires `editor-paste`, by logging in the dev console during a test paste.
   - If it does, track Shift on the `keydown` that started the paste (`registerDomEvent` on the document) and skip conversion for it.
   - If it doesn't, no code is needed; record the result in the walkthrough.
-- [ ] **TASK-9:** `isHtmlConversionEnabled()`.
+- [x] **TASK-9:** `isHtmlConversionEnabled()`.
   - Reads `(this.app.vault as any).getConfig?.('autoConvertHtml')` and treats anything other than `false` as on.
   - Confirm the key against a real vault: toggle the setting and inspect `.obsidian/app.json`. Correct the key if it's named differently.
   - When HTML conversion is off, `handlePaste` skips the HTML path. Only the plain-text ASCII path runs (TASK-13).

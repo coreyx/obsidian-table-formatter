@@ -88,13 +88,31 @@ export default class TableFormatterPlugin extends Plugin implements SettingsHost
 	};
 
 	/**
+	 * Whether Obsidian's own Settings → Editor → "Convert pasted HTML to
+	 * Markdown" is on. When it's off, Obsidian pastes plain text, and HTML
+	 * tables are left alone to match.
+	 *
+	 * `getConfig` and the `autoConvertHtml` key aren't in the public API
+	 * (the key was confirmed in Obsidian 1.14.5's own paste handler), so
+	 * anything unexpected is treated as the default: on.
+	 */
+	private isHtmlConversionEnabled(): boolean {
+		const vault = this.app.vault as unknown as { getConfig?: (key: string) => unknown };
+		try {
+			return vault.getConfig?.('autoConvertHtml') !== false;
+		} catch {
+			return true;
+		}
+	}
+
+	/**
 	 * Works out what to paste for the given clipboard contents.
 	 *
 	 * @returns The Markdown to insert, or `null` to let Obsidian paste natively.
 	 */
 	private convertClipboard(data: DataTransfer): string | null {
 		const html = data.getData('text/html');
-		if (html && this.settings.convertHtmlTables) {
+		if (html && this.settings.convertHtmlTables && this.isHtmlConversionEnabled()) {
 			const converted = convertHtmlPaste(html, {
 				parse: (source) => new DOMParser().parseFromString(source, 'text/html'),
 				htmlToMarkdown,
