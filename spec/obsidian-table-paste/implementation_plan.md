@@ -44,7 +44,7 @@ An Obsidian plugin that steps in when you paste into the editor. If the clipboar
 Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template, trimmed to what this plugin needs.
 
 #### [NEW] `package.json`, `tsconfig.json`, `esbuild.config.mjs`, `.gitignore`
-- [ ] **TASK-1:** Create the build setup.
+- [x] **TASK-1:** Create the build setup.
   - `package.json` scripts: `dev` (esbuild watch), `build` (`tsc -noEmit -skipLibCheck && node esbuild.config.mjs production`), `test` (runs every `scratch/test_*.ts` with `node`).
   - Dev dependencies: `obsidian`, `typescript`, `esbuild`, `builtin-modules`, `@types/node`, `tslib`, plus `linkedom` and `turndown`, used by the scratch tests only and never bundled.
   - `tsconfig.json`: `strict`, `allowImportingTsExtensions`, `noEmit`, `erasableSyntaxOnly`. Imports between source files use the `.ts` extension, so Node 22's built-in type stripping can run the converter files directly from the scratch tests.

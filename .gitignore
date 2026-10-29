@@ -1,0 +1,15 @@
+# npm
+node_modules
+
+# Build output; release builds are attached to GitHub releases instead.
+main.js
+*.map
+
+# Obsidian plugin settings written at runtime
+data.json
+
+# Editors and OS
+.vscode
+.idea
+*.iml
+.DS_Store
