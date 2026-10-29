@@ -28,5 +28,8 @@ The other three scripts passed unchanged: `test_html_tables.ts` (16), `test_plug
 3. Copy the table from the terminal and paste it into a note.
 4. In Reading view, the wrapped cell should read as one continuous sentence, with no line break in the middle.
 
+### Results (2026-10-29, run by Claude in Obsidian 1.14.5)
+**Passed.** In an isolated Obsidian 1.14.5 instance running the 0.2.0 build, the Claude Code fixture was put on the real clipboard with Windows line endings and pasted with Ctrl+V. The wrapped cell came out as `Print every step as it runs`, with no `<br>`, and Reading view rendered a 4-row table. This used the fixture, not a table copied from a live terminal.
+
 ## Follow-ups
 - A word broken mid-word with no hyphen, such as a long URL, gets a space where it was broken. That was already broken in 0.1.0 (with `<br>`), and there's no reliable way to tell those breaks from ordinary wrapping.

@@ -50,6 +50,17 @@ Install a build with this change: the next release through BRAT, or run `npm run
 4. **Code isn't converted:** copy tab-indented code from Notepad and paste it. It should paste as normal text.
 5. **Ways out:** paste tab-separated text with Ctrl+Shift+V; it should stay plain text. Turn off "Convert tab-separated data" and paste normally; it should also stay plain text.
 
+### Results (2026-10-29)
+Step 1 was done by hand; steps 2–5 were run by Claude in an isolated Obsidian 1.14.5 instance on the 0.2.0 build, with the real clipboard and real key presses.
+
+| Step | Result |
+| --- | --- |
+| 1. GridCraft | **Passed** (tested by hand). GridCraft copies tab-separated text, and it pastes as a table. |
+| 2. Tab-only clipboard | **Passed.** Rows with Windows line endings became a 3-row table, first row as header. |
+| 3. A cell with a line break | **Passed.** The quoted cell became `first line<br>second line`, and the table kept one row per spreadsheet row. |
+| 4. Tab-indented code | **Passed.** Pasted unchanged. |
+| 5. Ways out | **Passed.** Ctrl+Shift+V and the "Convert tab-separated data" toggle both left the text unchanged. |
+
 ## Follow-ups
 - **GridCraft** was tested by hand after the 0.2.0 release: copying cells from it and pasting into Obsidian produces a Markdown table (manual step 1). GridCraft copies cells as tab-separated text (confirmed by pasting into a plain-text editor), so the tab-separated path added in this spec is what converts them.
 - **Tab-aligned plain text from an app that copies no HTML** (Notepad, a terminal) can still be mistaken for a table if every row has the same number of tabs. Ctrl+Shift+V and the toggle are the ways out.

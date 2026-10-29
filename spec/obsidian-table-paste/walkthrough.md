@@ -46,7 +46,7 @@ Built "Table Formatter", an Obsidian plugin that hooks the editor's paste event.
 - **`README.md`**: what the plugin converts, with before/after examples, supported ASCII layouts and what's out of scope, the plain-text escape hatch, settings, manual install and building from source. Both examples were run through the converters, and the README shows their actual output.
 
 ### Two plan items done differently
-- **TASK-8:** the plan said to first observe in Obsidian whether Ctrl+Shift+V fires `editor-paste`. I couldn't run Obsidian from this session. Chromium delivers paste-as-plain-text as an ordinary paste event, so the keydown detection was added regardless; it's harmless if the event never fires. Manual step 7 below confirms the actual behavior.
+- **TASK-8:** the plan said to first observe in Obsidian whether Ctrl+Shift+V fires `editor-paste`. I couldn't run Obsidian at that point, so the keydown detection was added regardless, since Chromium delivers paste-as-plain-text as an ordinary paste event. The later run in Obsidian (see Results) confirmed that `editor-paste` does fire for it, carrying only `text/plain`, so the detection is needed.
 - **TASK-9:** the plan said to confirm the setting key by toggling it in a vault. Instead it was confirmed by finding `getConfig("autoConvertHtml")` in the paste code of the installed Obsidian 1.14.5 app bundle, which also shows the setting defaults to on. Your vault was not opened.
 
 ## Verification & Test Results
@@ -105,6 +105,30 @@ Nothing here has been run inside Obsidian yet: the tests use turndown in place o
 10. **Undo.** After any converted paste, press Ctrl+Z once. The whole paste should be undone.
 11. **Mobile** (optional). On Obsidian mobile, copy a table in a mobile browser and paste it into a note. It should convert.
 12. **Other apps.** Paste the same copied table into Google Sheets or Word. It should behave exactly as it did before, since the clipboard was never changed.
+
+### Results (2026-10-29, run by Claude in Obsidian 1.14.5)
+
+**How the checks were run:**
+- **Isolated instance:** a separate Obsidian 1.14.5 instance with its own profile and a throwaway test vault, controlled through Chrome DevTools remote debugging. It ran the 0.2.0 build.
+- **Real input:** each check put content on the real system clipboard and pressed real keys (Ctrl+V, Ctrl+Shift+V, Ctrl+Z). The script then read the note's Markdown and, for tables, the rendered Reading view.
+- **Test data:** for checks 1–3, real table markup from Wikipedia's "List of tallest buildings", wrapped the way Chrome puts a copy on the clipboard. Elsewhere, the fixtures in `scratch/fixtures/`.
+
+| Check | Result |
+| --- | --- |
+| 1. Whole table with merged headers | **Passed.** One rendered table (98 body rows + header, 11 columns), no raw HTML. The two-row header combined into `Height m` / `Height ft`. The first header is empty because Wikipedia's rank column header is empty. |
+| 2. Partial selection | **Passed.** Three copied rows became a table headed by the first one. |
+| 3. Paragraph + table + paragraph | **Passed.** Both paragraphs pasted as Markdown, with the table between them and blank lines on each side. |
+| 4. Google Sheets copy | **Passed** (fixture modeled on Sheets' clipboard HTML). First row as header, no CSS. |
+| 5. Terminal tables | **Passed** for the Claude Code box table, a MySQL grid and psql output, each pasted with Windows line endings, and for a box table inside a web page code block. |
+| 6. Content without a table | **Passed.** 1,735 characters, identical with the plugin enabled and disabled. |
+| 7. Ctrl+Shift+V | **Passed.** Obsidian does fire `editor-paste` for it, with only `text/plain` on the event, and the plugin leaves it alone for both HTML and ASCII tables. The next Ctrl+V converts again. |
+| 8. "Convert pasted HTML to Markdown" off | **Passed.** HTML tables pasted as plain text; terminal tables still converted. |
+| 9. Plugin toggles | **Passed.** With "Convert HTML tables" off, Obsidian's own conversion ran (`\|A\|B\|…`). With "Convert ASCII tables" off, the terminal table pasted unchanged. |
+| 10. Undo | **Passed.** One Ctrl+Z restored the note to its exact pre-paste text. |
+| 11. Mobile | **Not run.** |
+| 12. Pasting elsewhere | **Passed**, checked by comparing the clipboard's HTML and text before and after a converted paste: identical. Pasting into Sheets or Word wasn't tried. The full run first reported this check as failed; a focused rerun showed that was a fault in the test script's comparison, not in the plugin. |
+
+**Not covered:** content copied directly from Chrome, Google Sheets, Excel or a terminal. The clipboard data was built to match their formats rather than copied from the apps themselves.
 
 ## Follow-ups
 - **Tab-separated spreadsheet paste** (requested mid-implementation). Apps that copy only tab-separated text, with no HTML table, aren't converted yet. That may include GridCraft. It needs a new plain-text path, so it gets its own spec, `spec/spreadsheet-tsv-paste`. Excel and Google Sheets are already covered, because they copy an HTML table.
