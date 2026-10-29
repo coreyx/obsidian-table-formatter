@@ -120,7 +120,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 ### Documentation
 
 #### [NEW] `README.md`
-- [ ] **TASK-14:** Write the README: what the plugin does, a before/after example for each kind of table, supported ASCII styles and what's out of scope, the plain-text-paste escape hatch, settings, how to install manually (copy `main.js` + `manifest.json` into `<vault>/.obsidian/plugins/table-formatter/`) and how to build from source.
+- [x] **TASK-14:** Write the README: what the plugin does, a before/after example for each kind of table, supported ASCII styles and what's out of scope, the plain-text-paste escape hatch, settings, how to install manually (copy `main.js` + `manifest.json` into `<vault>/.obsidian/plugins/table-formatter/`) and how to build from source.
 
 ## Verification Plan
 
