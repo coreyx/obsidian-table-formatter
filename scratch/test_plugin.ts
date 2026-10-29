@@ -125,4 +125,16 @@ settings.convertAsciiTables = true;
 keydown({ ctrlKey: true, shiftKey: true });
 check('Ctrl+Shift+V leaves an ASCII table alone', paste({ 'text/plain': box }), { prevented: false, inserted: null });
 
+// spec/spreadsheet-tsv-paste TASK-3: tab-separated rows.
+const tsv = 'A\tB\n1\t2\n';
+const tsvSettings = settings as typeof settings & { convertTsvTables: boolean };
+check('tab-separated plain text converts', paste({ 'text/plain': tsv }), { prevented: true, inserted: tableMd });
+check('tab-separated text with non-table HTML is left alone', paste({ 'text/html': '<pre>A\tB</pre>', 'text/plain': tsv }), { prevented: false, inserted: null });
+tsvSettings.convertTsvTables = false;
+check('TSV setting off falls through', paste({ 'text/plain': tsv }), { prevented: false, inserted: null });
+tsvSettings.convertTsvTables = true;
+keydown({ ctrlKey: true, shiftKey: true });
+check('Ctrl+Shift+V leaves tab-separated text alone', paste({ 'text/plain': tsv }), { prevented: false, inserted: null });
+check('ASCII box table still converts with TSV on', paste({ 'text/plain': box }).inserted, tableMd);
+
 finish();

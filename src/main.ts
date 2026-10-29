@@ -1,6 +1,7 @@
 import { Editor, Plugin, htmlToMarkdown } from 'obsidian';
 import { convertAsciiTables } from './ascii-tables.ts';
 import { convertHtmlPaste } from './html-tables.ts';
+import { convertTsvPaste } from './tsv-tables.ts';
 import { DEFAULT_SETTINGS, TableFormatterSettingTab } from './settings.ts';
 import type { SettingsHost, TableFormatterSettings } from './settings.ts';
 
@@ -122,11 +123,22 @@ export default class TableFormatterPlugin extends Plugin implements SettingsHost
 			if (converted !== null) return converted;
 		}
 
+		const text = data.getData('text/plain');
+		if (!text) return null;
+
+		// Spreadsheet apps that copy only tab-separated text. Requiring the
+		// clipboard to have no HTML at all keeps tab-aligned code copied from
+		// editors like VS Code, which also put HTML on the clipboard, from
+		// being turned into a table.
+		if (!html && this.settings.convertTsvTables) {
+			const converted = convertTsvPaste(text);
+			if (converted !== null) return converted;
+		}
+
 		// Terminals and CLI tools put only plain text on the clipboard. This
 		// also runs when Obsidian's HTML conversion is off, since Obsidian then
 		// pastes the plain text anyway.
-		const text = data.getData('text/plain');
-		if (text && this.settings.convertAsciiTables) return convertAsciiTables(text);
+		if (this.settings.convertAsciiTables) return convertAsciiTables(text);
 		return null;
 	}
 }

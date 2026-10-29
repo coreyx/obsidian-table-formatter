@@ -51,7 +51,7 @@ Some spreadsheet and table apps copy cells only as tab-separated plain text, wit
 ### Plugin wiring
 
 #### [MODIFY] `src/main.ts`
-- [ ] **TASK-3:** In `convertClipboard()`, after the HTML path and before the ASCII path, call `convertTsvPaste(text)` when the clipboard has no `text/html` and `convertTsvTables` is on, and return its result if it isn't `null`.
+- [x] **TASK-3:** In `convertClipboard()`, after the HTML path and before the ASCII path, call `convertTsvPaste(text)` when the clipboard has no `text/html` and `convertTsvTables` is on, and return its result if it isn't `null`.
   - Ctrl+Shift+V already skips every conversion, so it skips this one too.
 
 ## Verification Plan
