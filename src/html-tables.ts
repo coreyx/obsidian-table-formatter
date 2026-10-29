@@ -121,11 +121,15 @@ function readAlign(cell: Element): Align {
 /**
  * Lays the table's cells out on a rectangular grid, expanding colspan and
  * rowspan so every row has a slot for every column it covers.
+ *
+ * @param firstRowOffset - The column the first row's first cell goes in. It's
+ *   non-zero only for a partially selected first row; see
+ *   {@link isPartialFirstRow}.
  */
-function buildGrid(rows: Element[], cellToMarkdown: CellToMarkdown): GridSlot[][] {
+function buildGrid(rows: Element[], cellToMarkdown: CellToMarkdown, firstRowOffset = 0): GridSlot[][] {
 	const grid: GridSlot[][] = rows.map(() => []);
 	rows.forEach((row, r) => {
-		let c = 0;
+		let c = r === 0 ? firstRowOffset : 0;
 		for (const cell of cellsOf(row)) {
 			const line = grid[r] ?? [];
 			while (line[c]) c++;
@@ -145,6 +149,22 @@ function buildGrid(rows: Element[], cellToMarkdown: CellToMarkdown): GridSlot[][
 		}
 	});
 	return grid;
+}
+
+/**
+ * Tells whether a short first row is likely the tail of a row that a
+ * selection started partway through. Chrome copies such a row without the
+ * cells before the selection's start, so its cells belong in the table's last
+ * columns rather than its first. A header row that leaves out its last cells
+ * is almost always in `<thead>` or made of `<th>` cells, so either rules this
+ * out.
+ *
+ * @param rows - The table's rows, from {@link collectRows}.
+ * @param theadCount - How many leading rows came from `<thead>`.
+ */
+function isPartialFirstRow(rows: Element[], theadCount: number): boolean {
+	const first = rows[0];
+	return rows.length > 1 && theadCount === 0 && first !== undefined && cellsOf(first).every((c) => c.tagName !== 'TH');
 }
 
 /**
@@ -212,8 +232,16 @@ function columnAlignment(bodyRows: GridSlot[][], columns: number): Align[] {
  */
 export function htmlTableToGrid(table: Element, cellToMarkdown: CellToMarkdown): TableGrid {
 	const { rows, theadCount } = collectRows(table);
-	const grid = buildGrid(rows, cellToMarkdown);
-	const columns = Math.max(0, ...grid.map((row) => row.length));
+	const widthOf = (g: GridSlot[][]): number => Math.max(0, ...g.map((row) => row.length));
+	let grid = buildGrid(rows, cellToMarkdown);
+	let columns = widthOf(grid);
+	const firstRowWidth = grid[0]?.length ?? 0;
+	if (firstRowWidth < columns && isPartialFirstRow(rows, theadCount)) {
+		// Rebuilt rather than shifted in place so rowspans from the first row
+		// cover the right columns in the rows below.
+		grid = buildGrid(rows, cellToMarkdown, columns - firstRowWidth);
+		columns = widthOf(grid);
+	}
 	const headerCount = headerRowCount(rows, theadCount);
 	const headerRows = grid.slice(0, headerCount);
 	const bodyRows = grid.slice(headerCount);

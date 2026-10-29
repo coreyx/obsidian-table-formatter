@@ -47,7 +47,7 @@ None at this time.
   - Gather `readAlign()` from the origin slots of the body rows, as the current fallback does. Return the shared value when every one agrees and is non-null, otherwise `null`.
   - Drop the header-cell lookup and the `headerRows` parameter; update the call in `htmlTableToGrid()`.
   - Rewrite the doc comment to say why header cells are ignored: Chrome inlines computed styles, and header cells compute to `center`.
-- [ ] **TASK-2:** Pad a partially selected first row on the left.
+- [x] **TASK-2:** Pad a partially selected first row on the left.
   - Give `buildGrid()` a `firstRowOffset` parameter (default `0`): the column where the first row's first cell is placed. Rowspans from that row use the shifted columns too.
   - Add `isPartialFirstRow(rows, theadCount)`: true when there's more than one row, the table has no `<thead>`, and the first row has no `<th>` cells.
   - In `htmlTableToGrid()`, build the grid once. If `isPartialFirstRow()` holds and the first row's width (its slot count) is less than the table's column count, rebuild with `firstRowOffset` set to the difference.
