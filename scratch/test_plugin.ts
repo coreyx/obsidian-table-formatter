@@ -1,0 +1,94 @@
+// Regression checks for the paste handler in src/main.ts (spec/obsidian-table-paste, TASK-7 onward).
+// Loads the built main.js (run `npm run build` first) with a fake `obsidian` module and drives
+// simulated paste events through it.
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { check, finish } from './harness.ts';
+import { htmlToMarkdown, parse } from './dom.ts';
+
+type Handler = (evt: unknown, editor: unknown) => void;
+const handlers: Record<string, Handler> = {};
+const vaultConfig: Record<string, unknown> = {};
+
+class FakePlugin {
+	app = {
+		workspace: { on: (name: string, cb: Handler) => ((handlers[name] = cb), { name }) },
+		vault: { getConfig: (key: string) => vaultConfig[key] },
+	};
+	registerEvent(): void {}
+	registerDomEvent(target: { addEventListener: (type: string, cb: (e: unknown) => void, opts?: unknown) => void }, type: string, cb: (e: unknown) => void, opts?: unknown): void {
+		target.addEventListener(type, cb, opts);
+	}
+	addSettingTab(): void {}
+	async loadData(): Promise<unknown> {
+		return null;
+	}
+	async saveData(): Promise<void> {}
+}
+
+const fakeObsidian = {
+	Plugin: FakePlugin,
+	PluginSettingTab: class {},
+	Setting: class {},
+	htmlToMarkdown,
+};
+
+// Browser globals main.js uses at runtime.
+const g = globalThis as Record<string, unknown>;
+g.DOMParser = class {
+	parseFromString(source: string): Document {
+		return parse(source);
+	}
+};
+const listeners: Record<string, ((e: unknown) => void)[]> = {};
+g.document = {
+	addEventListener: (type: string, cb: (e: unknown) => void) => (listeners[type] ??= []).push(cb),
+};
+
+// main.js is a CommonJS bundle, but package.json says "type": "module", so
+// evaluate it directly with a require that hands it the fake `obsidian`.
+const nodeRequire = createRequire(import.meta.url);
+const bundle = readFileSync(new URL('../main.js', import.meta.url), 'utf8');
+const mod: { exports: Record<string, unknown> } = { exports: {} };
+new Function('module', 'exports', 'require', bundle)(mod, mod.exports, (request: string) =>
+	request === 'obsidian' ? fakeObsidian : nodeRequire(request),
+);
+const PluginClass = (mod.exports as { default: new () => FakePlugin & { onload(): Promise<void> } }).default;
+const plugin = new PluginClass();
+await plugin.onload();
+
+/** Simulates one paste and reports what happened to it. */
+function paste(data: Record<string, string>): { prevented: boolean; inserted: string | null } {
+	let prevented = false;
+	let inserted: string | null = null;
+	const evt = {
+		defaultPrevented: false,
+		clipboardData: { getData: (type: string) => data[type] ?? '' },
+		preventDefault() {
+			prevented = true;
+			this.defaultPrevented = true;
+		},
+	};
+	const editor = { replaceSelection: (text: string) => (inserted = text) };
+	handlers['editor-paste']?.(evt, editor);
+	return { prevented, inserted };
+}
+
+const table = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
+const tableMd = '| A   | B   |\n| --- | --- |\n| 1   | 2   |';
+
+check('registers an editor-paste handler', typeof handlers['editor-paste'], 'function');
+check('HTML table paste is converted', paste({ 'text/html': table, 'text/plain': 'A\tB\n1\t2' }), { prevented: true, inserted: tableMd });
+check('HTML without a table falls through', paste({ 'text/html': '<p>hi</p>', 'text/plain': 'hi' }), { prevented: false, inserted: null });
+check('plain text without a table falls through', paste({ 'text/plain': 'just text' }), { prevented: false, inserted: null });
+
+const already = { defaultPrevented: true, clipboardData: { getData: () => table }, preventDefault() {} };
+let touched = false;
+handlers['editor-paste']?.(already, { replaceSelection: () => (touched = true) });
+check('paste already handled by another plugin is ignored', touched, false);
+
+(plugin as unknown as { settings: { convertHtmlTables: boolean } }).settings.convertHtmlTables = false;
+check('HTML setting off falls through', paste({ 'text/html': table }), { prevented: false, inserted: null });
+(plugin as unknown as { settings: { convertHtmlTables: boolean } }).settings.convertHtmlTables = true;
+
+finish();

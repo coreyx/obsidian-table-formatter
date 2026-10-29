@@ -84,7 +84,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 - [x] **TASK-6:** `TableFormatterSettings` with `convertHtmlTables: boolean` and `convertAsciiTables: boolean` (both default `true`), and a `PluginSettingTab` with a toggle for each.
 
 #### [NEW] `src/main.ts`
-- [ ] **TASK-7:** `TableFormatterPlugin extends Plugin`.
+- [x] **TASK-7:** `TableFormatterPlugin extends Plugin`.
   - `onload` loads settings, adds the settings tab, and registers `this.app.workspace.on('editor-paste', this.handlePaste)` through `this.registerEvent`.
   - `handlePaste(evt, editor)`:
     1. Return if `evt.defaultPrevented` is set or `evt.clipboardData` is missing.
