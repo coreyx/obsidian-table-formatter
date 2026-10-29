@@ -1,3 +1,4 @@
+import { renderGfmTable } from './table-model.ts';
 import type { Align, TableGrid } from './table-model.ts';
 
 /**
@@ -223,4 +224,134 @@ export function htmlTableToGrid(table: Element, cellToMarkdown: CellToMarkdown):
 		rows: bodyRows.map((row) => Array.from({ length: columns }, (_, i) => (row[i]?.isOrigin ? row[i]?.markdown ?? '' : ''))),
 		align: columnAlignment(headerRows, bodyRows, columns),
 	};
+}
+
+/**
+ * What {@link convertHtmlPaste} needs from its environment. The plugin passes
+ * `DOMParser` and Obsidian's `htmlToMarkdown()`; tests pass stand-ins.
+ */
+export interface HtmlPasteDeps {
+	/** Parses clipboard HTML into a document. */
+	parse: (html: string) => Document;
+	/** Converts HTML to Markdown the way Obsidian's own paste does. */
+	htmlToMarkdown: (input: HTMLElement | DocumentFragment | string) => string;
+}
+
+/** A table taken out of the document, waiting to be put back as Markdown. */
+interface Extracted {
+	token: string;
+	markdown: string;
+}
+
+/**
+ * Whether a table should be converted by us. Tables marked as layout tables
+ * are left to Obsidian, as are tables with no cells.
+ */
+function isConvertible(table: Element): boolean {
+	const role = (table.getAttribute('role') ?? '').toLowerCase();
+	if (role === 'presentation' || role === 'none') return false;
+	return collectRows(table).rows.length > 0;
+}
+
+/**
+ * Renders a table, preceded by its caption as a plain paragraph if it has one.
+ */
+function tableBlock(table: Element, deps: HtmlPasteDeps): string {
+	const toMarkdown: CellToMarkdown = (content) => deps.htmlToMarkdown(content);
+	const markdown = renderGfmTable(htmlTableToGrid(table, toMarkdown));
+	const caption = Array.from(table.children).find((el) => el.tagName === 'CAPTION');
+	if (!caption) return markdown;
+	const text = cellMarkdown(caption, toMarkdown).replace(/\s*\n\s*/g, ' ').trim();
+	return text ? `${text}\n\n${markdown}` : markdown;
+}
+
+/**
+ * Lines left behind when a placeholder shared its line with other Markdown,
+ * e.g. a table inside a list item leaves `- ` behind once the table is moved.
+ */
+const BARE_LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])?\s*$/;
+
+/**
+ * Puts each extracted table back where its placeholder ended up.
+ *
+ * A placeholder alone on its line is replaced by the table, with a blank line
+ * on each side. One that shares its line (inside a list item, say) has the
+ * table placed on its own lines right after that line, because a GFM table
+ * can't start mid-line. Inside a blockquote, the table keeps the `>` prefix.
+ */
+function restoreTables(markdown: string, extracted: Extracted[]): string {
+	const byToken = new Map(extracted.map((e) => [e.token, e.markdown]));
+	const tokenPattern = new RegExp(extracted.map((e) => e.token).join('|'), 'g');
+	const out: string[] = [];
+
+	const pushBlock = (block: string, prefix: string): void => {
+		const last = out.length - 1;
+		// A whitespace-only line before the table (a list item's indented blank) becomes the separator.
+		if (last >= 0 && out[last]?.trim() === '') out[last] = prefix.trimEnd();
+		else if (last >= 0 && out[last]?.trim() !== prefix.trim()) out.push(prefix.trimEnd());
+		for (const line of block.split('\n')) out.push(prefix + line);
+		out.push(prefix.trimEnd());
+	};
+
+	for (const line of markdown.split('\n')) {
+		const tokens = line.match(tokenPattern);
+		if (!tokens) {
+			out.push(line);
+			continue;
+		}
+		const rest = line.replace(tokenPattern, '');
+		const quotePrefix = /^(\s*>\s*)+$/.test(rest) ? rest.replace(/\s*$/, ' ') : null;
+		if (quotePrefix === null && !BARE_LIST_MARKER.test(rest)) out.push(rest.trimEnd());
+		for (const token of tokens) pushBlock(byToken.get(token) ?? '', quotePrefix ?? '');
+	}
+
+	// Blank lines added around tables can double up with ones already there,
+	// and the one after a final table would otherwise end the paste.
+	return out
+		.join('\n')
+		.replace(/\n(?:[ \t]*>?[ \t]*\n){2,}/g, (run) => (run.includes('>') ? '\n>\n' : '\n\n'))
+		.replace(/(?:\n[ \t]*>?[ \t]*)+$/, '')
+		.trim();
+}
+
+/**
+ * Converts a pasted HTML document to Markdown with proper GFM tables.
+ *
+ * Each outermost convertible `<table>` is swapped for a placeholder paragraph
+ * whose token is plain letters and digits, so the Markdown converter passes it
+ * through untouched. The rest of the document then goes through
+ * `deps.htmlToMarkdown`, exactly as a native Obsidian paste would, and the
+ * rendered tables are swapped back in for their tokens.
+ *
+ * @param html - The clipboard's `text/html`.
+ * @param deps - Parser and Markdown converter.
+ * @returns The Markdown to insert, or `null` when there is nothing for this
+ *   plugin to convert and Obsidian's native paste should run instead.
+ */
+export function convertHtmlPaste(html: string, deps: HtmlPasteDeps): string | null {
+	const doc = deps.parse(html);
+	const body = doc.body;
+	if (!body) return null;
+
+	const tables = Array.from(body.querySelectorAll('table')).filter(
+		(table) => !table.parentElement?.closest('table') && isConvertible(table),
+	);
+	if (tables.length === 0) return null;
+
+	// Clipboard HTML from spreadsheets carries <style> blocks in the body,
+	// whose CSS text would otherwise land in the note.
+	for (const el of Array.from(body.querySelectorAll('style, script, meta, link, title'))) el.remove();
+
+	// A random prefix keeps the tokens from colliding with text in the paste.
+	const nonce = Math.random().toString(36).slice(2, 10).toUpperCase();
+	const extracted: Extracted[] = tables.map((table, i) => {
+		const token = `TFTABLE${nonce}X${i}X`;
+		const markdown = tableBlock(table, deps);
+		const placeholder = doc.createElement('p');
+		placeholder.textContent = token;
+		table.replaceWith(placeholder);
+		return { token, markdown };
+	});
+
+	return restoreTables(deps.htmlToMarkdown(body.innerHTML), extracted);
 }

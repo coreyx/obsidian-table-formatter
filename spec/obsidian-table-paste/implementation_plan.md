@@ -72,7 +72,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
   - Picks the header row using the rules in User Review Required.
   - Reads alignment from header cells.
   - Converts each cell with `cellToMarkdown`, the Obsidian converter injected from outside. A table nested inside a cell is flattened to its text, with rows joined by `<br>`.
-- [ ] **TASK-5:** `convertHtmlPaste(html: string, deps: { parse: (html: string) => Document; htmlToMarkdown: (el: HTMLElement | DocumentFragment | string) => string }): string | null`.
+- [x] **TASK-5:** `convertHtmlPaste(html: string, deps: { parse: (html: string) => Document; htmlToMarkdown: (el: HTMLElement | DocumentFragment | string) => string }): string | null`.
   - Parses the HTML and returns `null` (meaning: fall through to native paste) when it contains no convertible `<table>` and no ASCII-table `<pre>`. The `<pre>` check is wired in at TASK-12.
   - Replaces each outermost convertible table with a `<p>` holding an alphanumeric placeholder token (`TFTABLE0`, `TFTABLE1`, …). The token has no Markdown-special characters, so `htmlToMarkdown()` leaves it alone.
   - Runs `htmlToMarkdown()` on the rest, then swaps each token line for its rendered table, keeping a blank line before and after. A `<caption>` is written as a plain line just above the table.

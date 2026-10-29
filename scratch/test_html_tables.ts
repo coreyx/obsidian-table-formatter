@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { check, finish } from './harness.ts';
 import { htmlToMarkdown, parse } from './dom.ts';
-import { htmlTableToGrid } from '../src/html-tables.ts';
+import { convertHtmlPaste, htmlTableToGrid } from '../src/html-tables.ts';
 import { renderGfmTable } from '../src/table-model.ts';
 
 const fixture = (name: string): string => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8');
@@ -76,5 +76,65 @@ check('th rows in tbody become header; row headers stay body', tableLines(
 	'| --- | --- |',
 	'| Ana | 7 |',
 ]);
+
+// --- convertHtmlPaste (TASK-5) ---
+
+const deps = { parse, htmlToMarkdown };
+const simpleTable = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
+const simpleMarkdown = ['| A   | B   |', '| --- | --- |', '| 1   | 2   |'].join('\n');
+
+// 6. <caption> is written above the table.
+check('caption above table', convertHtmlPaste(fixture('thead-table.html'), deps)?.split('\n').slice(0, 3), [
+	'Selected planets',
+	'',
+	'| Planet  | Moons | Ring system |',
+]);
+
+// 7. A layout table is left to Obsidian.
+check('presentation table returns null', convertHtmlPaste(`<table role="presentation"><tr><td>layout</td></tr></table>`, deps), null);
+
+// 8. Mixed paste: the non-table parts match the converter's own output.
+const before = '<h2>Title</h2><p>Intro with <a href="https://example.com/">a link</a>.</p>';
+const after = '<ul><li>one</li><li>two</li></ul>';
+check(
+	'mixed paste keeps surrounding markdown',
+	convertHtmlPaste(`${before}${simpleTable}${after}`, deps),
+	`${htmlToMarkdown(before)}\n\n${simpleMarkdown}\n\n${htmlToMarkdown(after)}`,
+);
+
+// 10. No tables at all: fall through to native paste.
+check('no tables returns null', convertHtmlPaste('<p>Just <b>text</b></p>', deps), null);
+
+// A full Google Sheets clipboard document: the CSS in its <style> block must not leak.
+check('sheets paste has no CSS and is just the table', convertHtmlPaste(fixture('sheets-table.html'), deps), [
+	'| Item   | Qty | Price |',
+	'| ------ | --- | ----- |',
+	'| Widget | 4   | 2.50  |',
+	'| Gadget | 10  | 1.25  |',
+].join('\n'));
+
+// Chrome's clipboard wrapper and fragment comments don't get in the way.
+check('chrome wrapper converts', convertHtmlPaste(fixture('chrome-partial.html'), deps)?.split('\n').length, 3);
+
+// Two tables in one paste keep their order.
+check(
+	'two tables keep order',
+	convertHtmlPaste(`${simpleTable}<p>between</p>${simpleTable.replace('>1<', '>9<')}`, deps),
+	`${simpleMarkdown}\n\nbetween\n\n${simpleMarkdown.replace('| 1 ', '| 9 ')}`,
+);
+
+// A table inside a list item is moved onto its own lines after the item's text.
+check(
+	'table in list item moves below it',
+	convertHtmlPaste(`<ul><li>Item text${simpleTable}</li></ul>`, deps),
+	`-   Item text\n\n${simpleMarkdown}`,
+);
+
+// A table inside a blockquote stays in the blockquote.
+check(
+	'table in blockquote keeps > prefix',
+	convertHtmlPaste(`<blockquote>${simpleTable}</blockquote>`, deps),
+	simpleMarkdown.split('\n').map((l) => `> ${l}`).join('\n'),
+);
 
 finish();
