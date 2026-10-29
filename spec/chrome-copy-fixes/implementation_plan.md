@@ -63,7 +63,7 @@ None at this time.
   - Made-up values only (invented building names and heights).
 
 #### [NEW] `scratch/fixtures/chrome-mid-row.html`
-- [ ] **TASK-4:** A synthetic partial copy, also with Chrome's wrapper and inline styles.
+- [x] **TASK-4:** A synthetic partial copy, also with Chrome's wrapper and inline styles.
   - A `<tbody>`-only table whose first row is missing its first two cells and whose last row is missing its trailing cells.
   - A cell with `rowspan="2"` in the first row.
   - Made-up values only.
