@@ -12,12 +12,43 @@ export default class TableFormatterPlugin extends Plugin implements SettingsHost
 	settings: TableFormatterSettings = { ...DEFAULT_SETTINGS };
 
 	/**
+	 * Time (ms since epoch) until which a paste counts as paste-as-plain-text,
+	 * set by the Ctrl/Cmd+Shift+V keydown that precedes it.
+	 */
+	private plainPasteUntil = 0;
+
+	/**
 	 * Loads settings, adds the settings tab and starts listening for pastes.
 	 */
 	async onload(): Promise<void> {
 		await this.loadSettings();
 		this.addSettingTab(new TableFormatterSettingTab(this.app, this));
 		this.registerEvent(this.app.workspace.on('editor-paste', this.handlePaste));
+
+		// Pop-out windows have their own document, so watch each one's keys too.
+		this.watchPlainPasteShortcut(document);
+		this.registerEvent(this.app.workspace.on('window-open', (_win, popout) => this.watchPlainPasteShortcut(popout.document)));
+	}
+
+	/**
+	 * Remembers when Ctrl/Cmd+Shift+V is pressed. Chromium delivers that
+	 * shortcut as an ordinary paste event carrying only plain text, so the key
+	 * press is the only way to tell that the user asked for the raw text.
+	 * Listening in the capture phase sees the key before the editor acts on it.
+	 */
+	private watchPlainPasteShortcut(doc: Document): void {
+		this.registerDomEvent(
+			doc,
+			'keydown',
+			(evt: KeyboardEvent) => {
+				if ((evt.ctrlKey || evt.metaKey) && evt.shiftKey && evt.key.toLowerCase() === 'v') {
+					// The paste event follows the keydown immediately; the window
+					// only needs to cover that gap without catching a later paste.
+					this.plainPasteUntil = Date.now() + 1000;
+				}
+			},
+			{ capture: true },
+		);
 	}
 
 	/**
@@ -43,6 +74,11 @@ export default class TableFormatterPlugin extends Plugin implements SettingsHost
 	private readonly handlePaste = (evt: ClipboardEvent, editor: Editor): void => {
 		// Another plugin already took this paste.
 		if (evt.defaultPrevented || !evt.clipboardData) return;
+
+		// Paste-as-plain-text is the user's way to skip conversion.
+		const plainPaste = Date.now() < this.plainPasteUntil;
+		this.plainPasteUntil = 0;
+		if (plainPaste) return;
 
 		const markdown = this.convertClipboard(evt.clipboardData);
 		if (markdown === null) return;

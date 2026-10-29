@@ -91,4 +91,15 @@ check('paste already handled by another plugin is ignored', touched, false);
 check('HTML setting off falls through', paste({ 'text/html': table }), { prevented: false, inserted: null });
 (plugin as unknown as { settings: { convertHtmlTables: boolean } }).settings.convertHtmlTables = true;
 
+// TASK-8: Ctrl/Cmd+Shift+V skips conversion for the paste that follows, and only that one.
+const keydown = (init: Record<string, unknown>): void => listeners.keydown?.forEach((cb) => cb({ key: 'V', ctrlKey: false, metaKey: false, shiftKey: false, ...init }));
+check('keydown listener registered on document', (listeners.keydown ?? []).length, 1);
+keydown({ ctrlKey: true, shiftKey: true });
+check('Ctrl+Shift+V paste is left alone', paste({ 'text/html': table }), { prevented: false, inserted: null });
+check('the next ordinary paste converts again', paste({ 'text/html': table }).prevented, true);
+keydown({ metaKey: true, shiftKey: true, key: 'v' });
+check('Cmd+Shift+V paste is left alone', paste({ 'text/html': table }).prevented, false);
+keydown({ ctrlKey: true, key: 'v' });
+check('plain Ctrl+V still converts', paste({ 'text/html': table }).prevented, true);
+
 finish();

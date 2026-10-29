@@ -91,7 +91,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
     2. Read `text/html`. If it's present, `convertHtmlTables` is on and HTML conversion is enabled (TASK-9), call `convertHtmlPaste` with `parse` (a `DOMParser`) and Obsidian's `htmlToMarkdown`.
     3. If that returns a string, call `evt.preventDefault()` and `editor.replaceSelection(result)`, which undoes in a single step.
     4. Otherwise return without touching anything, so the native paste runs.
-- [ ] **TASK-8:** Find out whether Ctrl/Cmd+Shift+V fires `editor-paste`, by logging in the dev console during a test paste.
+- [x] **TASK-8:** Find out whether Ctrl/Cmd+Shift+V fires `editor-paste`, by logging in the dev console during a test paste.
   - If it does, track Shift on the `keydown` that started the paste (`registerDomEvent` on the document) and skip conversion for it.
   - If it doesn't, no code is needed; record the result in the walkthrough.
 - [ ] **TASK-9:** `isHtmlConversionEnabled()`.
