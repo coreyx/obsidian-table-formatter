@@ -102,7 +102,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 ### ASCII table conversion (last, per the original nice-to-have)
 
 #### [NEW] `src/ascii-tables.ts`
-- [ ] **TASK-10:** `parseAsciiTable(lines: string[]): TableGrid | null` for box-drawing and `+---+` grids.
+- [x] **TASK-10:** `parseAsciiTable(lines: string[]): TableGrid | null` for box-drawing and `+---+` grids.
   - Takes column boundaries from the junction positions (`┬ ┼ ┴ ╋ ╦ ╬ +`) on border lines, so a `|` inside a cell doesn't split it. Falls back to splitting on the vertical bar characters when no border line exists.
   - The first separator line after the first content row marks the header.
   - If there are separator lines between data rows, the content lines between two separators form one row, joined with `<br>`. Otherwise each content line is a row.
