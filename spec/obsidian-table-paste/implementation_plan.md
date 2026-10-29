@@ -115,7 +115,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
   - Also wire it into `convertHtmlPaste`: a `<pre>` whose text converts gets a placeholder and its table, in the same way as an HTML table.
 
 #### [MODIFY] `src/main.ts`
-- [ ] **TASK-13:** Add the plain-text path to `handlePaste`. If the HTML path didn't handle the paste and `convertAsciiTables` is on, run `convertAsciiTables(text/plain)`. If it returns a string, call `preventDefault` and `replaceSelection`. This runs whether or not HTML conversion is on: with HTML conversion off, Obsidian would paste the plain text anyway.
+- [x] **TASK-13:** Add the plain-text path to `handlePaste`. If the HTML path didn't handle the paste and `convertAsciiTables` is on, run `convertAsciiTables(text/plain)`. If it returns a string, call `preventDefault` and `replaceSelection`. This runs whether or not HTML conversion is on: with HTML conversion off, Obsidian would paste the plain text anyway.
 
 ### Documentation
 

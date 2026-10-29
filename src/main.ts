@@ -1,4 +1,5 @@
 import { Editor, Plugin, htmlToMarkdown } from 'obsidian';
+import { convertAsciiTables } from './ascii-tables.ts';
 import { convertHtmlPaste } from './html-tables.ts';
 import { DEFAULT_SETTINGS, TableFormatterSettingTab } from './settings.ts';
 import type { SettingsHost, TableFormatterSettings } from './settings.ts';
@@ -116,9 +117,16 @@ export default class TableFormatterPlugin extends Plugin implements SettingsHost
 			const converted = convertHtmlPaste(html, {
 				parse: (source) => new DOMParser().parseFromString(source, 'text/html'),
 				htmlToMarkdown,
+				convertAsciiInPre: this.settings.convertAsciiTables,
 			});
 			if (converted !== null) return converted;
 		}
+
+		// Terminals and CLI tools put only plain text on the clipboard. This
+		// also runs when Obsidian's HTML conversion is off, since Obsidian then
+		// pastes the plain text anyway.
+		const text = data.getData('text/plain');
+		if (text && this.settings.convertAsciiTables) return convertAsciiTables(text);
 		return null;
 	}
 }

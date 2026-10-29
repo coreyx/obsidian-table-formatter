@@ -110,4 +110,19 @@ check('HTML conversion on in Obsidian: converts', paste({ 'text/html': table }).
 delete vaultConfig.autoConvertHtml;
 check('setting missing: treated as on', paste({ 'text/html': table }).prevented, true);
 
+// TASK-13: plain-text ASCII tables.
+const box = ['┌───┬───┐', '│ A │ B │', '├───┼───┤', '│ 1 │ 2 │', '└───┴───┘'].join('\n');
+const settings = (plugin as unknown as { settings: { convertHtmlTables: boolean; convertAsciiTables: boolean } }).settings;
+check('terminal ASCII table converts', paste({ 'text/plain': box }), { prevented: true, inserted: tableMd });
+check('ASCII table with non-table HTML converts from plain text', paste({ 'text/html': '<div><span>┌───┬───┐</span></div>', 'text/plain': box }).inserted, tableMd);
+vaultConfig.autoConvertHtml = false;
+check('ASCII still converts when Obsidian HTML conversion is off', paste({ 'text/html': table, 'text/plain': box }).inserted, tableMd);
+delete vaultConfig.autoConvertHtml;
+settings.convertAsciiTables = false;
+check('ASCII setting off falls through', paste({ 'text/plain': box }), { prevented: false, inserted: null });
+check('ASCII setting off leaves <pre> tables alone', paste({ 'text/html': `<pre>${box}</pre>`, 'text/plain': box }), { prevented: false, inserted: null });
+settings.convertAsciiTables = true;
+keydown({ ctrlKey: true, shiftKey: true });
+check('Ctrl+Shift+V leaves an ASCII table alone', paste({ 'text/plain': box }), { prevented: false, inserted: null });
+
 finish();

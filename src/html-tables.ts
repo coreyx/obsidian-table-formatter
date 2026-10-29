@@ -236,6 +236,8 @@ export interface HtmlPasteDeps {
 	parse: (html: string) => Document;
 	/** Converts HTML to Markdown the way Obsidian's own paste does. */
 	htmlToMarkdown: (input: HTMLElement | DocumentFragment | string) => string;
+	/** Also convert `<pre>` blocks holding ASCII tables; defaults to true. */
+	convertAsciiInPre?: boolean;
 }
 
 /** A table taken out of the document, waiting to be put back as Markdown. */
@@ -341,7 +343,7 @@ export function convertHtmlPaste(html: string, deps: HtmlPasteDeps): string | nu
 	// A <pre> holding nothing but an ASCII table, as when copying a terminal
 	// transcript or console output from a web page. One inside a table cell
 	// is part of that table instead.
-	const preTables = Array.from(body.querySelectorAll('pre'))
+	const preTables = Array.from(deps.convertAsciiInPre === false ? [] : body.querySelectorAll('pre'))
 		.filter((pre) => !pre.closest('table'))
 		.map((pre) => ({ pre, grid: parseTableBlock((pre.textContent ?? '').replace(/^\s*\n|\s+$/g, '').split(/\r?\n/)) }))
 		.filter((found): found is { pre: HTMLPreElement; grid: TableGrid } => found.grid !== null);
