@@ -43,7 +43,7 @@ None at this time.
 ### HTML tables
 
 #### [MODIFY] `src/html-tables.ts`
-- [ ] **TASK-1:** Change `columnAlignment()` to take each column's alignment from the data rows only.
+- [x] **TASK-1:** Change `columnAlignment()` to take each column's alignment from the data rows only.
   - Gather `readAlign()` from the origin slots of the body rows, as the current fallback does. Return the shared value when every one agrees and is non-null, otherwise `null`.
   - Drop the header-cell lookup and the `headerRows` parameter; update the call in `htmlTableToGrid()`.
   - Rewrite the doc comment to say why header cells are ignored: Chrome inlines computed styles, and header cells compute to `center`.

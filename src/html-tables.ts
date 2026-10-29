@@ -183,16 +183,14 @@ function combineHeader(headerRows: GridSlot[][], columns: number): string[] {
 }
 
 /**
- * Picks each column's alignment from the header cell; when the header says
- * nothing, uses the body cells' alignment if they all agree, since many pages
- * right-align numeric columns only on the data cells.
+ * Picks each column's alignment from its data cells: the shared alignment
+ * when every one agrees, otherwise none. Header cells are ignored on purpose.
+ * Chrome writes each cell's computed styles into the copied HTML, and header
+ * cells compute to `center` by default, so trusting them would center every
+ * column of nearly every table copied from Chrome.
  */
-function columnAlignment(headerRows: GridSlot[][], bodyRows: GridSlot[][], columns: number): Align[] {
-	const lastHeader = headerRows[headerRows.length - 1] ?? [];
+function columnAlignment(bodyRows: GridSlot[][], columns: number): Align[] {
 	return Array.from({ length: columns }, (_, i) => {
-		const headerSlot = lastHeader[i];
-		const fromHeader = headerSlot ? readAlign(headerSlot.cell) : null;
-		if (fromHeader) return fromHeader;
 		const bodyAligns = bodyRows.map((row) => row[i]).filter((slot) => slot?.isOrigin).map((slot) => readAlign((slot as GridSlot).cell));
 		const first = bodyAligns[0] ?? null;
 		return first && bodyAligns.every((a) => a === first) ? first : null;
@@ -223,7 +221,7 @@ export function htmlTableToGrid(table: Element, cellToMarkdown: CellToMarkdown):
 	return {
 		header: headerRows.length ? combineHeader(headerRows, columns) : [],
 		rows: bodyRows.map((row) => Array.from({ length: columns }, (_, i) => (row[i]?.isOrigin ? row[i]?.markdown ?? '' : ''))),
-		align: columnAlignment(headerRows, bodyRows, columns),
+		align: columnAlignment(bodyRows, columns),
 	};
 }
 
