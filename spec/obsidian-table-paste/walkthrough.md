@@ -128,7 +128,19 @@ Nothing here has been run inside Obsidian yet: the tests use turndown in place o
 | 11. Mobile | **Not run.** |
 | 12. Pasting elsewhere | **Passed**, checked by comparing the clipboard's HTML and text before and after a converted paste: identical. Pasting into Sheets or Word wasn't tried. The full run first reported this check as failed; a focused rerun showed that was a fault in the test script's comparison, not in the plugin. |
 
-**Not covered:** content copied directly from Chrome, Google Sheets, Excel or a terminal. The clipboard data was built to match their formats rather than copied from the apps themselves.
+**Real Chrome copies:** a second run copied tables in Chrome with a real Ctrl+C, then pasted them into the same isolated Obsidian instance. Each paste was compared with Obsidian's own paste (plugin disabled).
+
+| Case | Result |
+| --- | --- |
+| A. Whole Wikipedia table with merged headers ("List of tallest buildings") | Converts: one rendered table, 98 body rows plus the combined header, no raw HTML. **Bug: every column is centered.** Chrome writes each element's computed styles into the copied HTML, and header cells are centered by default. The plugin takes a column's alignment from its header cell first, so the left-aligned "Name" and right-aligned height columns were centered too. Obsidian's own paste sets no alignment. |
+| B. Partial selection, starting mid-row | Converts. **Bug: the first row is shifted one column left.** Chrome copies a row that the selection starts partway through without the cells before the starting point, and the plugin pads short rows on the right. The row's alignment is shifted with it. Obsidian's own paste is worse here: a 10-column table that cuts off the 11-cell rows. |
+| C. Paragraph + table + paragraph | **Passed.** The text around the table is identical to Obsidian's own paste. Every row has 6 cells, where Obsidian's own paste leaves some rows with 5 because it doesn't expand merged cells. Columns are centered, from the same alignment bug as case A. |
+| D. Text inside a single cell | **Passed.** Identical to Obsidian's own paste, with no table. |
+| E. GitHub-rendered table (this repo's README) | **Passed.** Pipes inside inline code are escaped correctly. |
+
+During these runs, another process was also writing to the system clipboard. All five cases were rerun once it had stopped. The results above come from the rerun and match the first run. That overlap may also explain why check 12 first failed in the run above.
+
+**Not covered:** content copied directly from Google Sheets, Excel, Word or a terminal, and mobile. Their clipboard data was built to match each app's format instead.
 
 ## Follow-ups
 - **Tab-separated spreadsheet paste** (requested mid-implementation). Apps that copy only tab-separated text, with no HTML table, aren't converted yet. That may include GridCraft. It needs a new plain-text path, so it gets its own spec, `spec/spreadsheet-tsv-paste`. Excel and Google Sheets are already covered, because they copy an HTML table.
