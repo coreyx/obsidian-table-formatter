@@ -81,7 +81,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
 ### Plugin wiring
 
 #### [NEW] `src/settings.ts`
-- [ ] **TASK-6:** `TableFormatterSettings` with `convertHtmlTables: boolean` and `convertAsciiTables: boolean` (both default `true`), and a `PluginSettingTab` with a toggle for each.
+- [x] **TASK-6:** `TableFormatterSettings` with `convertHtmlTables: boolean` and `convertAsciiTables: boolean` (both default `true`), and a `PluginSettingTab` with a toggle for each.
 
 #### [NEW] `src/main.ts`
 - [ ] **TASK-7:** `TableFormatterPlugin extends Plugin`.
