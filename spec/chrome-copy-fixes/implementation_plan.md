@@ -56,7 +56,7 @@ None at this time.
 ### Tests
 
 #### [NEW] `scratch/fixtures/chrome-whole-table.html`
-- [ ] **TASK-3:** A synthetic whole-table copy with Chrome's markup.
+- [x] **TASK-3:** A synthetic whole-table copy with Chrome's markup.
   - The `<html><body><!--StartFragment-->` wrapper and inline computed styles on every cell.
   - A two-row grouped `<thead>` whose `<th>` cells are all `text-align: center`.
   - Data cells that are `text-align: left` in a name column and `text-align: right` in two number columns, plus one mixed column.
