@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-29
+
 ### Fixed
 - **Columns copied from Chrome were all centered.** Chrome copies each cell's computed styles, and header cells are centered by default. Alignment now comes from a column's data cells: a column is aligned when they all agree, and has no alignment otherwise.
 - **A selection starting partway through a table row shifted that row to the left.** Its cells now stay in the columns they came from, with empty cells before them.
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Paste as plain text** (Ctrl/Cmd+Shift+V) skips conversion.
 - **Settings:** a toggle each for HTML and ASCII table conversion. HTML conversion also follows Obsidian's "Convert pasted HTML to Markdown" setting.
 
-[Unreleased]: https://github.com/coreyx/obsidian-table-formatter/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/coreyx/obsidian-table-formatter/compare/0.2.1...HEAD
+[0.2.1]: https://github.com/coreyx/obsidian-table-formatter/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/coreyx/obsidian-table-formatter/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/coreyx/obsidian-table-formatter/releases/tag/0.1.0

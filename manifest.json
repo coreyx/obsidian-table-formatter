@@ -1,7 +1,7 @@
 {
 	"id": "table-formatter",
 	"name": "Table Formatter",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"minAppVersion": "1.1.0",
 	"description": "Paste HTML tables (from browsers, spreadsheets, documents) and ASCII/box-drawing tables (from terminals and CLI tools) as clean Markdown tables.",
 	"author": "Corey Struzan",

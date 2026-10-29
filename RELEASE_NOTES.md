@@ -1,5 +1,21 @@
 # Release Notes
 
+## 0.2.1 - 2026-10-29
+
+Two fixes for tables copied from Chrome.
+
+### Columns no longer all come out centered
+
+Chrome copies each table cell along with its styles, and browsers center header cells by default. Table Formatter used to take a column's alignment from its header, so nearly every table copied from Chrome pasted with every column centered. Alignment now comes from a column's data cells instead. A column of right-aligned numbers stays right-aligned, and a column whose cells don't agree gets no alignment.
+
+### Selections that start partway through a row stay lined up
+
+If your selection starts in the middle of a table row, Chrome copies only the rest of that row. That row used to land one or more columns to the left of where it belongs. Its cells now stay in their own columns, with empty cells before them.
+
+### Updating
+
+BRAT picks up this release on its next update check. To update right away, run **BRAT: Check for updates to all beta plugins and UPDATE** from the command palette.
+
 ## 0.2.0 - 2026-10-29
 
 ### Spreadsheet data copied as plain text
