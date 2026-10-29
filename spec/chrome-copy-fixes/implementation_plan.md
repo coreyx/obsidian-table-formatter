@@ -69,7 +69,7 @@ None at this time.
   - Made-up values only.
 
 #### [NEW] `scratch/test_chrome_copies.ts`
-- [ ] **TASK-5:** A regression script run by `npm test`, using the existing `harness.ts` and `dom.ts` helpers.
+- [x] **TASK-5:** A regression script run by `npm test`, using the existing `harness.ts` and `dom.ts` helpers.
   1. **Whole-table fixture:** the delimiter row is `:---` / `---:` / `---:` / `---`. That's left, right, right, and none for the mixed column; nothing is centered.
   2. **Mid-row fixture:** the first row's cells sit in the last columns with empty cells before them, and the rowspan's shifted column is empty on the row below.
   3. **Last row:** the short last row is padded on the right.
