@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Columns copied from Chrome were all centered.** Chrome copies each cell's computed styles, and header cells are centered by default. Alignment now comes from a column's data cells: a column is aligned when they all agree, and has no alignment otherwise.
+- **A selection starting partway through a table row shifted that row to the left.** Its cells now stay in the columns they came from, with empty cells before them.
+
 ## [0.2.0] - 2026-10-29
 
 ### Added

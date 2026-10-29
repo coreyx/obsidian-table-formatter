@@ -20,7 +20,8 @@ For each table:
 - **Grouped headers**: a header spread over several rows is combined into one, so "Population" over "2010" and "2020" becomes `Population 2010` and `Population 2020`.
 - **Merged cells**: `colspan` and `rowspan` keep their content in the first cell they cover and leave the others empty.
 - **Cell content**: links, bold, italics, inline code and images are kept. Line breaks become `<br>`, and `|` is escaped.
-- **Alignment**: left, center and right alignment carry over into the table's delimiter row.
+- **Alignment**: a column whose data cells are all left-, center- or right-aligned keeps that alignment in the delimiter row. Header cells don't count, because browsers center them by default and Chrome copies that default along with the page's own styles.
+- **Partial selections**: when a selection starts partway through a row, the browser copies only that row's remaining cells. They're placed in the columns they came from, with empty cells before them.
 - **Captions**: a table's caption is pasted as a line above it.
 - **Nested and layout tables**: a table nested in a cell is flattened to text. Tables marked as layout (`role="presentation"`) are left to Obsidian.
 
