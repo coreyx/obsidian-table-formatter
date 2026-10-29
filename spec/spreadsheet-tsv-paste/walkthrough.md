@@ -51,6 +51,6 @@ Install a build with this change: the next release through BRAT, or run `npm run
 5. **Ways out:** paste tab-separated text with Ctrl+Shift+V; it should stay plain text. Turn off "Convert tab-separated data" and paste normally; it should also stay plain text.
 
 ## Follow-ups
-- **GridCraft** was tested by hand after the 0.2.0 release: copying cells from it and pasting into Obsidian produces a Markdown table (manual step 1). Which clipboard format it uses wasn't recorded.
+- **GridCraft** was tested by hand after the 0.2.0 release: copying cells from it and pasting into Obsidian produces a Markdown table (manual step 1). GridCraft copies cells as tab-separated text (confirmed by pasting into a plain-text editor), so the tab-separated path added in this spec is what converts them.
 - **Tab-aligned plain text from an app that copies no HTML** (Notepad, a terminal) can still be mistaken for a table if every row has the same number of tabs. Ctrl+Shift+V and the toggle are the ways out.
 - **Comma-separated text** is out of scope: commas are too common in ordinary prose to detect reliably.
