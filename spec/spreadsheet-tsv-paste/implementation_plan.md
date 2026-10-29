@@ -37,7 +37,7 @@ Some spreadsheet and table apps copy cells only as tab-separated plain text, wit
 ### Tab-separated parsing
 
 #### [NEW] `src/tsv-tables.ts`
-- [ ] **TASK-1:** `parseTsv(text: string): TableGrid | null` and `convertTsvPaste(text: string): string | null`.
+- [x] **TASK-1:** `parseTsv(text: string): TableGrid | null` and `convertTsvPaste(text: string): string | null`.
   - `parseTsv` reads rows and fields with tab and newline as separators. A field starting with `"` is quoted: it runs to the closing `"`, `""` stands for a literal quote, and tabs and line breaks inside it belong to the cell. Both `\r\n` and `\n` count as line breaks.
   - It returns `null` when there are fewer than 2 non-empty rows or 2 columns, when column counts differ, when every row's first field is empty, or when a quote is left unclosed.
   - The first row becomes `header` and the rest `rows`, with no alignment.
