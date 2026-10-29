@@ -95,13 +95,24 @@ Settings → Community plugins → Table Formatter:
 
 ## Installing
 
-The plugin isn't in the community plugin directory yet. To install it by hand:
+The plugin isn't in the community plugin directory yet. It works on desktop and mobile.
 
-1. Build it (see below), or download `main.js` and `manifest.json` from a release.
+### With BRAT (recommended)
+
+[BRAT](https://github.com/TfTHacker/obsidian42-brat) installs plugins straight from their GitHub releases and keeps them updated.
+
+1. In Obsidian, open Settings → Community plugins → Browse, then search for **BRAT** ("Obsidian42 - BRAT"). Install and enable it.
+2. Open Settings → BRAT and click **Add beta plugin**.
+3. Enter `coreyx/obsidian-table-formatter` (or `https://github.com/coreyx/obsidian-table-formatter`), leave the version on the latest release, and tick **Enable after installing the plugin**. Then click **Add plugin**.
+4. If you didn't tick that box, enable **Table Formatter** under Settings → Community plugins.
+
+BRAT checks for new releases when Obsidian starts. To update straight away, run **BRAT: Check for updates to all beta plugins and UPDATE** from the command palette.
+
+### By hand
+
+1. Download `main.js` and `manifest.json` from the [latest release](https://github.com/coreyx/obsidian-table-formatter/releases/latest), or build them yourself (see below).
 2. Create the folder `<vault>/.obsidian/plugins/table-formatter/` and copy both files into it.
 3. In Obsidian, open Settings → Community plugins, reload the list, and enable **Table Formatter**.
-
-It works on desktop and mobile.
 
 ## Building from source
 
