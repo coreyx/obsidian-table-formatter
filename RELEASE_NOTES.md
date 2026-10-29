@@ -1,5 +1,23 @@
 # Release Notes
 
+## 0.2.0 - 2026-10-29
+
+### Spreadsheet data copied as plain text
+
+Some spreadsheet and table apps copy cells only as tab-separated text, not as a table. Pasting that into Obsidian now gives you a Markdown table too, with the first row as the header. Cells holding line breaks, which Excel and Google Sheets put in quotes, come through intact.
+
+To keep code and other tab-aligned text from turning into tables by accident, this only happens when the clipboard holds plain text and nothing else, and every row has the same number of columns. If something still converts that shouldn't, paste it with Ctrl+Shift+V (Cmd+Shift+V on macOS), or turn off the new "Convert tab-separated data" setting.
+
+Excel and Google Sheets already worked in 0.1.0, because they also copy cells as a table.
+
+### Wrapped cells in terminal tables read as sentences
+
+When a cell in a terminal table, like the ones Claude Code prints, wraps over several lines, those lines are now joined with spaces. A long description pastes as one sentence instead of being broken where the terminal happened to wrap it. Lines that start a list item still get their own line within the cell.
+
+### Updating
+
+BRAT picks up this release on its next update check. To update right away, run **BRAT: Check for updates to all beta plugins and UPDATE** from the command palette.
+
 ## 0.1.0 - 2026-10-29
 
 The first release of Table Formatter. Copy a table from almost anywhere, paste it into Obsidian, and get a clean Markdown table instead of raw HTML or a jumble of characters.

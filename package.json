@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-table-formatter",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Obsidian plugin that pastes HTML and ASCII tables as Markdown tables.",
 	"main": "main.js",
 	"type": "module",
@@ -10,7 +10,12 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"test": "npm run build && node scratch/run_tests.mjs"
 	},
-	"keywords": ["obsidian", "markdown", "table", "paste"],
+	"keywords": [
+		"obsidian",
+		"markdown",
+		"table",
+		"paste"
+	],
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^22.15.17",
