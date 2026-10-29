@@ -52,7 +52,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
   - `.gitignore`: `node_modules/`, `main.js`, `data.json`.
 
 #### [NEW] `manifest.json`, `versions.json`, `LICENSE`
-- [ ] **TASK-2:** Add the plugin manifest: id `table-formatter`, name "Table Formatter", version `0.1.0`, `minAppVersion` `1.1.0`, `isDesktopOnly: false`, plus description and author. Add `versions.json` mapping `0.1.0` to `1.1.0`, and an MIT `LICENSE`.
+- [x] **TASK-2:** Add the plugin manifest: id `table-formatter`, name "Table Formatter", version `0.1.0`, `minAppVersion` `1.1.0`, `isDesktopOnly: false`, plus description and author. Add `versions.json` mapping `0.1.0` to `1.1.0`, and an MIT `LICENSE`.
 
 ### Shared table model
 
