@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Wrapped cells in ASCII tables:** a cell that wraps over several lines now joins its lines with spaces, so wrapped sentences paste as one sentence. Lines that start a list item still go on a new line within the cell.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added
