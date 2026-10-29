@@ -2,7 +2,9 @@
 // Fixtures are synthetic tables in the layouts real tools print.
 import { readFileSync } from 'node:fs';
 import { check, finish } from './harness.ts';
-import { parseAsciiTable, parsePsqlTable } from '../src/ascii-tables.ts';
+import { htmlToMarkdown, parse } from './dom.ts';
+import { convertAsciiTables, parseAsciiTable, parsePsqlTable } from '../src/ascii-tables.ts';
+import { convertHtmlPaste } from '../src/html-tables.ts';
 import { renderGfmTable } from '../src/table-model.ts';
 
 const fixture = (name: string): string => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
@@ -92,5 +94,47 @@ check('psql table with footer', psql(fixture('psql-table.txt')), [
 ]);
 check('psql single row footer', psql([' n ', '---', ' 1 ', '(1 row)'].join('\n')), null);
 check('psql without rule is not psql', psql([' a | b', ' 1 | 2'].join('\n')), null);
+
+// --- convertAsciiTables (TASK-12) ---
+
+const box = ['┌───────┬─────┐', '│ Name  │ Qty │', '├───────┼─────┤', '│ Apple │ 3   │', '└───────┴─────┘'];
+const boxMd = ['| Name  | Qty |', '| ----- | --- |', '| Apple | 3   |'];
+
+// 6. Surrounding text is unchanged, and blank lines separate the table.
+check(
+	'surrounding text kept, blank lines added',
+	convertAsciiTables(['Here are the results:', ...box, 'Done.  ', '  indented tail'].join('\n')),
+	['Here are the results:', '', ...boxMd, '', 'Done.  ', '  indented tail'].join('\n'),
+);
+check('existing blank lines not doubled', convertAsciiTables(['Intro', '', ...box, '', 'Outro'].join('\n')), ['Intro', '', ...boxMd, '', 'Outro'].join('\n'));
+check('CRLF paste keeps CRLF', convertAsciiTables(['Intro', ...box].join('\r\n')), ['Intro', '', ...boxMd].join('\r\n'));
+
+// 7. Two tables in one paste.
+check(
+	'two tables both convert',
+	convertAsciiTables([...box, 'and', ...fixture('mysql-table.txt').trimEnd().split('\n')].join('\n'))?.split('\n').filter((l) => l.startsWith('| ---') || l.startsWith('| -')).length,
+	2,
+);
+
+// psql output inside surrounding shell text.
+check(
+	'psql in a transcript',
+	convertAsciiTables(['db=> select id, name from users;', ...fixture('psql-table.txt').trimEnd().split('\n'), 'db=> '].join('\n'))?.split('\n'),
+	['db=> select id, name from users;', '', '| id  | name         | joined     |', '| --- | ------------ | ---------- |', '| 1   | Ada          | 2024-01-05 |', '| 2   | Grace Hopper |            |', '', 'db=> '],
+);
+
+// 8. Nothing to convert.
+check('whitespace-aligned columns left alone', convertAsciiTables(['NAME      STATUS   AGE', 'web-1     Running  3d', 'web-2     Pending  1m'].join('\n')), null);
+check('markdown table left alone', convertAsciiTables(['| a | b |', '|---|---|', '| 1 | 2 |'].join('\n')), null);
+check('drawn box left alone', convertAsciiTables(['┌──────────┐', '│ Warning! │', '└──────────┘'].join('\n')), null);
+check('prose left alone', convertAsciiTables('Plain prose.\nWith a second line, and a | pipe.'), null);
+
+// 9. A <pre> holding a box-drawing table, inside pasted HTML.
+check(
+	'pre with box table converts in HTML paste',
+	convertHtmlPaste(`<p>Output:</p><pre><code>${box.join('\n')}\n</code></pre><p>After</p>`, { parse, htmlToMarkdown }),
+	['Output:', '', ...boxMd, '', 'After'].join('\n'),
+);
+check('pre with ordinary code left alone', convertHtmlPaste('<pre><code>const a = 1;</code></pre>', { parse, htmlToMarkdown }), null);
 
 finish();

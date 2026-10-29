@@ -1,3 +1,4 @@
+import { parseTableBlock } from './ascii-tables.ts';
 import { renderGfmTable } from './table-model.ts';
 import type { Align, TableGrid } from './table-model.ts';
 
@@ -317,7 +318,8 @@ function restoreTables(markdown: string, extracted: Extracted[]): string {
 /**
  * Converts a pasted HTML document to Markdown with proper GFM tables.
  *
- * Each outermost convertible `<table>` is swapped for a placeholder paragraph
+ * Each outermost convertible `<table>`, and each `<pre>` whose whole text is
+ * an ASCII table, is swapped for a placeholder paragraph
  * whose token is plain letters and digits, so the Markdown converter passes it
  * through untouched. The rest of the document then goes through
  * `deps.htmlToMarkdown`, exactly as a native Obsidian paste would, and the
@@ -336,7 +338,14 @@ export function convertHtmlPaste(html: string, deps: HtmlPasteDeps): string | nu
 	const tables = Array.from(body.querySelectorAll('table')).filter(
 		(table) => !table.parentElement?.closest('table') && isConvertible(table),
 	);
-	if (tables.length === 0) return null;
+	// A <pre> holding nothing but an ASCII table, as when copying a terminal
+	// transcript or console output from a web page. One inside a table cell
+	// is part of that table instead.
+	const preTables = Array.from(body.querySelectorAll('pre'))
+		.filter((pre) => !pre.closest('table'))
+		.map((pre) => ({ pre, grid: parseTableBlock((pre.textContent ?? '').replace(/^\s*\n|\s+$/g, '').split(/\r?\n/)) }))
+		.filter((found): found is { pre: HTMLPreElement; grid: TableGrid } => found.grid !== null);
+	if (tables.length === 0 && preTables.length === 0) return null;
 
 	// Clipboard HTML from spreadsheets carries <style> blocks in the body,
 	// whose CSS text would otherwise land in the note.
@@ -344,14 +353,17 @@ export function convertHtmlPaste(html: string, deps: HtmlPasteDeps): string | nu
 
 	// A random prefix keeps the tokens from colliding with text in the paste.
 	const nonce = Math.random().toString(36).slice(2, 10).toUpperCase();
-	const extracted: Extracted[] = tables.map((table, i) => {
+	const extract = (element: Element, markdown: string, i: number): Extracted => {
 		const token = `TFTABLE${nonce}X${i}X`;
-		const markdown = tableBlock(table, deps);
 		const placeholder = doc.createElement('p');
 		placeholder.textContent = token;
-		table.replaceWith(placeholder);
+		element.replaceWith(placeholder);
 		return { token, markdown };
-	});
+	};
+	const extracted: Extracted[] = [
+		...tables.map((table, i) => extract(table, tableBlock(table, deps), i)),
+		...preTables.map(({ pre, grid }, i) => extract(pre, renderGfmTable(grid), tables.length + i)),
+	];
 
 	return restoreTables(deps.htmlToMarkdown(body.innerHTML), extracted);
 }

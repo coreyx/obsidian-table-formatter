@@ -1,3 +1,4 @@
+import { renderGfmTable } from './table-model.ts';
 import type { TableGrid } from './table-model.ts';
 
 /** Characters that separate cells on a content line. */
@@ -321,4 +322,72 @@ export function parseAsciiTable(lines: string[]): TableGrid | null {
 	const rows = rowPerGroup ? bodyGroups.map(mergeLines) : (bodyGroups[0] ?? []).map((cells) => mergeLines([cells]));
 
 	return { header: mergeLines(headerGroup), rows, align: [] };
+}
+
+/**
+ * Parses a block of lines that should be exactly one table, in any of the
+ * supported layouts.
+ *
+ * @returns The grid, or `null` if the block isn't a single table.
+ */
+export function parseTableBlock(lines: string[]): TableGrid | null {
+	return parsePsqlTable(lines) ?? parseAsciiTable(lines);
+}
+
+/**
+ * Finds where a candidate table starting at `start` ends.
+ *
+ * @returns The index after the run's last line, or `start` if no table
+ *   layout starts there.
+ */
+function runEnd(lines: string[], start: number): number {
+	const first = lines[start] ?? '';
+	const second = lines[start + 1];
+	if (second !== undefined && isPsqlStart(first, second)) {
+		let end = start + 2;
+		while (end < lines.length && (lines[end] ?? '').includes('|')) end++;
+		if (end < lines.length && PSQL_FOOTER.test((lines[end] ?? '').trim())) end++;
+		return end;
+	}
+	let end = start;
+	while (end < lines.length && (isBorderLine(lines[end] ?? '') || isContentLine(lines[end] ?? ''))) end++;
+	return end;
+}
+
+/**
+ * Converts every ASCII, box-drawing or psql table in pasted plain text into
+ * a GFM table, separated from the surrounding text by blank lines.
+ *
+ * Candidate runs are consecutive lines that are all border or content lines
+ * (bordered tables), or a header plus `---+---` underline and the rows after
+ * it (psql). A run that fails to parse is left as it was, and every line
+ * outside a converted table is kept exactly. Output uses the paste's own
+ * line ending (`\r\n` from Windows clipboards, else `\n`).
+ *
+ * @param text - The clipboard's `text/plain`.
+ * @returns The converted text, or `null` when no table was found.
+ */
+export function convertAsciiTables(text: string): string | null {
+	const eol = text.includes('\r\n') ? '\r\n' : '\n';
+	const lines = text.split(/\r?\n/);
+	const out: string[] = [];
+	let converted = false;
+
+	for (let i = 0; i < lines.length; ) {
+		const end = runEnd(lines, i);
+		const grid = end > i ? parseTableBlock(lines.slice(i, end)) : null;
+		if (!grid) {
+			out.push(lines[i] ?? '');
+			i++;
+			continue;
+		}
+		converted = true;
+		// GFM needs a blank line between a table and a paragraph next to it.
+		if (out.length && (out[out.length - 1] ?? '').trim() !== '') out.push('');
+		out.push(...renderGfmTable(grid).split('\n'));
+		if (end < lines.length && (lines[end] ?? '').trim() !== '') out.push('');
+		i = end;
+	}
+
+	return converted ? out.join(eol) : null;
 }

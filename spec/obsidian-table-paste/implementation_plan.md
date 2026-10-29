@@ -108,7 +108,7 @@ Based on the layout of the official `obsidianmd/obsidian-sample-plugin` template
   - If there are separator lines between data rows, the content lines between two separators form one row, joined with `<br>`. Otherwise each content line is a row.
   - Returns `null` when the lines don't form a consistent grid, meaning differing column counts or misaligned boundaries.
 - [x] **TASK-11:** `parsePsqlTable(lines)` for the borderless psql layout: a header line, a `---+---` underline, rows split at the `+` positions, and an optional trailing `(N rows)` line that is dropped.
-- [ ] **TASK-12:** `convertAsciiTables(text: string): string | null`.
+- [x] **TASK-12:** `convertAsciiTables(text: string): string | null`.
   - Scans the text for runs of consecutive lines that start and end with border characters, or match the psql layout. Tolerates trailing whitespace and a common leading indent.
   - Parses each run and replaces it with `renderGfmTable` output, with a blank line before and after.
   - Leaves all other text byte-for-byte unchanged, and returns `null` if nothing was converted.
