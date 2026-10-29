@@ -46,7 +46,7 @@ Some spreadsheet and table apps copy cells only as tab-separated plain text, wit
 ### Settings
 
 #### [MODIFY] `src/settings.ts`
-- [ ] **TASK-2:** Add `convertTsvTables: boolean` (default `true`) to `TableFormatterSettings` and `DEFAULT_SETTINGS`, with a "Convert tab-separated data" toggle described as "Paste rows copied as tab-separated text, as some spreadsheet apps do, as Markdown tables."
+- [x] **TASK-2:** Add `convertTsvTables: boolean` (default `true`) to `TableFormatterSettings` and `DEFAULT_SETTINGS`, with a "Convert tab-separated data" toggle described as "Paste rows copied as tab-separated text, as some spreadsheet apps do, as Markdown tables."
 
 ### Plugin wiring
 
